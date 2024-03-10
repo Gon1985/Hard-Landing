@@ -1,0 +1,695 @@
+import tkinter as tk
+import pygame
+from random import uniform
+from PIL import Image, ImageTk  
+import time
+from tkinter import messagebox 
+
+class HardLandingSimulator:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Hard Landing Simulator")
+        root.geometry("800x500")
+        root.resizable(False, False)
+        root.iconbitmap('images/icon.ico')
+        self.timer_window_open = False
+        self.about_window_open = False 
+        self.help_window_open = False
+        self.aircraft_window_open = False
+        self.current_aircraft_index = 0
+        self.aircraft_data = [
+            {"name": "Modelo 1", "image_path": "images/747.jpg", "info": " \n\n 747-Comercial plane \n\n ----------------------- \n\n  Wingspan: Approximately 68 meters. \n\n Length: Varies by version but \n\n typically around 70 meters. \n\n Height: Around 19 meters. \n\n Maximum Cruise Speed: Near Mach 0.85 \n\n (approximately 920 km/h). \n\n Range: Varies by version and payload \n\n but can exceed 13,000 kilometers. \n\n Maximum Takeoff Weight: Can exceed 400 tons, \n\n depending on version and configuration. \n\n Engines: Pratt & Whitney JT9D, \n\n General Electric CF6, \n\n or Rolls-Royce RB211 engines. "},
+            {"name": "Modelo 2", "image_path": "images/subsonicmissile.jpg", "info": "\n\n Subsonic Missiles \n\n ----------------------- \n\n Speed: Subsonic missiles travel at speeds \n\n  below the speed of sound, typically below Mach 1 \n\n (approximately 1,225 km/h or 761 mph). \n\n Range: Subsonic missiles can have  \n\n varying ranges  depending on  \n\n their design and purpose, \n\n with some able to travel \n\n hundreds of kilometers or more. \n\n Payload: Subsonic missiles can carry \n\n a variety of payloads, including conventional \n\n  explosives, cluster munitions, submunitions, \n\n or even specialized warheads like \n\n bunker busters or anti-ship missiles. "},
+            {"name": "Modelo 3", "image_path": "images/supersonic.jpg", "info": "\n\n  Supersonic Missiles \n\n ----------------------- \n\n Speed: travel at speeds faster \n\n than the speed of sound, typically \n\n exceeding Mach 1. \n\n Velocity: Their high velocity allows \n\n supersonic missiles to cover \n\n distances rapidly, making them effective \n\n for quick strikes and interception missions. \n\n Applications: Supersonic missiles \n\n have a wide range of military \n\n applications, including \n\n  air-to-air combat, air-to-surface strikes, \n\n anti-ship warfare, missile defense, \n\n and strategic deterrence. "},
+            {"name": "Modelo 4", "image_path": "images/f16.jpg", "info": "\n\n F16 \n\n ----------------------- \n\n Speed and Performance: The F-16 \n\n is known for its exceptional agility \n\n and performance. It is capable of \n\n reaching speeds in excess of Mach 2 \n\n (approximately 2,414 km/h or 1,500 mph) \n\n and can sustain high-G maneuvers. \n\n Avionics: The F-16 is equipped \n\n with advanced avionics systems, including \n\n radar, sensors, and targeting pods, \n\n which provide the pilot with situational \n\n awareness and enhance combat effectiveness.  \n\n Over the years, the F-16 has undergone various \n\n upgrades and modernization programs. "},
+            {"name": "Modelo 5", "image_path": "images/f15.jpg", "info": "\n\n F15 \n\n ----------------------- \n\n The F-15 Eagle is a twin-engine, \n\n all-weather tactical fighter aircraft \n\n designed for air superiority missions. \n\n It is renowned for its exceptional \n\n maneuverability and \n\n performance in aerial combat. \n\n Speed and Performance: The F-15 \n\n is capable of reaching speeds in \n\n excess of Mach 2.5 \n\n (approximately 3,200 km/h or 2,000 mph) \n\n and can climb rapidly to high altitudes. \n\n It is known for its impressive \n\n acceleration and high thrust-to-weight ratio.   "},
+            {"name": "Modelo 6", "image_path": "images/f18.jpg", "info": "\n\n F18 \n\n ----------------------- \n\n The F/A-18 Hornet is a versatile, twin-engine \n\n supersonic fighter aircraft designed \n\nfor both air superiority and \n\n ground attack missions. It is \n\n capable of performing a wide range \n\n of roles, including air-to-air combat, \n\n air-to-ground strikes, reconnaissance, \n\n and close air support. \n\n Speed and Performance: The F/A-18 is capable \n\n of reaching speeds exceeding Mach 1.8  \n\n (approximately 2,220 km/h or 1,380 mph)  \n\n and has excellent agility and \n\n maneuverability.  "},
+            {"name": "Modelo 7", "image_path": "images/euro.jpg", "info": "\n\n Eurofighter Typhoon \n\n ----------------------- \n\n The Eurofighter Typhoon is \n\n a multirole fighter aircraft designed \n\n for air superiority, aerial \n\n reconnaissance, and ground attack missions. \n\n It is capable of performing both \n\n air-to-air and air-to-ground missions. \n\n Speed and Performance: \n\n The Eurofighter Typhoon is a  \n\n highly agile and maneuverable aircraft, \n\n capable of reaching speeds  \n\n  of Mach 2 (approximately 2,495 km/h \n\n  or 1,550 mph) at altitude. \n\n  It features advanced aerodynamics. "},
+            {"name": "Modelo 8", "image_path": "images/ICBM.jpg", "info": "\n\n ICBM \n\n ----------------------- \n\n ICBMs are long-range ballistic \n\n missiles designed to deliver \n\n nuclear warheads to targets \n\n thousands of kilometers away.\n\n They are a key component of a \n\n country's strategic nuclear deterrent. \n\n Range: ICBMs have a minimum range  \n\n of 5,500 kilometers (3,400 miles)  \n\n  but can travel much farther.  \n\n Speed: ICBMs travel at \n\n hypersonic speeds, typically exceeding Mach 20 \n\n (around 24,000 km/h or 15,000 mph) \n\n during the reentry phase."},
+            {"name": "Modelo 9", "image_path": "images/ufo.jpg", "info": "\n\n UFO \n\n ----------------------- \n\n speed: unknown \n\n range: unknown \n\n payload: unknown \n\n purpose: unknown \n\n race: unknown \n\n size: unknown \n\n weight: unknown \n\n history: unknown \n\n notes: unknown \n\n last updated: unknown \n\n source: unknown \n\n weapons: unknown \n\n "},
+            {"name": "Modelo 10", "image_path": "images/drone.jpg", "info": "\n\n killers drones \n\n ----------------------- \n\n The speed of killers drones can vary \n\n from a few kilometers per hour \n\n to supersonic speeds. Tactical drones may \n\n have cruise speed of 80-100 kilometers, \n\n while more advanced attack drones could \n\n reach speeds of up to 900 \n\n kilometers per hour or more. \n\n Smaller models may weigh only a  \n\n few kilograms, while larger \n\n attack drones could weigh several \n\n hundred kilograms or even over a ton. \n\n Some tactical drones may have ranges \n\n of up to 100 kilometers or more"},
+            {"name": "Modelo 11", "image_path": "images/planecrash.jpg", "info": "\n\n hard landing \n\n ----------------------- \n\n A hard landing typically refers to an aircraft \n\n landing that involves a sudden and significant \n\n impact with the runway or ground surface. \n\n This can occur due to various reasons \n\n such as adverse weather conditions, pilot error, \n\n mechanical issues, \n\n or miscalculations during the landing process. \n\n A hard landing can be dangerous and \n\n may result in damage to the aircraft, \n\n injuries to passengers and crew, \n\n or even fatalities in extreme cases. \n\n Pilots are trained to execute \n\n smooth landings.  "},
+        
+        ]  # Datos de los modelos de avión
+        
+
+        # Inicializar Pygame para reproducir sonidos
+        pygame.mixer.init()
+
+        # Cargar el sonido de fondo y configurarlo para reproducirse en bucle
+        self.background_sound = pygame.mixer.Sound("sounds/backgroundsound.mp3")
+        self.background_sound.set_volume(0.5)  # Ajusta el volumen según sea necesario
+        self.background_sound.play(loops=-1)  # -1 significa bucle infinito
+
+        # Cargar los sonidos de los botones
+        self.button_sound = pygame.mixer.Sound("sounds/execute2.mp3")
+        self.reset_sound = pygame.mixer.Sound("sounds/reset.mp3")
+        self.stop_sound = pygame.mixer.Sound("sounds/stop.mp3")
+        
+        
+        self.impact_count = 0
+        self.impact_labels = []
+        
+        
+        self.load_sounds() 
+        
+    
+        # Cargar la imagen de fondo
+        self.background_image = tk.PhotoImage(file="images/fondo9.png")
+
+        # Crear un widget Label para mostrar la imagen de fondo
+        self.background_label = tk.Label(root, image=self.background_image)
+        self.background_label.place(x=0, y=0, relwidth=1, relheight=1)
+
+        # Crear marcos
+        self.left_frame = tk.Frame(root, bg='#0d0d0d')
+        self.left_frame.pack(side=tk.LEFT, padx=10, pady=10)
+
+        self.right_frame = tk.Frame(root, bg='#0d0d0d')
+        self.right_frame.pack(side=tk.RIGHT, padx=10, pady=10)
+        
+    
+        # Crear widgets
+        self.kg_label = tk.Label(self.left_frame, text="Enter weight (KG):", bg='#0d0d0d', fg='#31ff03', font=("pixelmix", 10))
+        self.kg_label.pack()
+
+        self.kg_entry = tk.Entry(self.left_frame)
+        self.kg_entry.pack()
+
+        self.altitude_label = tk.Label(self.left_frame, text="Enter altitude (M):", bg='#0d0d0d', fg='#31ff03', font=("pixelmix", 10))
+        self.altitude_label.pack()
+
+        self.altitude_entry = tk.Entry(self.left_frame)
+        self.altitude_entry.pack()
+        
+        # Asociar la función de validación a los campos de entrada
+        self.kg_entry.config(validate="key", validatecommand=(root.register(lambda text: self.validate_entry(text, self.kg_entry)), "%P"))
+        self.altitude_entry.config(validate="key", validatecommand=(root.register(lambda text: self.validate_entry(text, self.altitude_entry)), "%P"))
+
+
+        # Menú desplegable para los escenarios de simulación
+        self.scenario_label = tk.Label(self.left_frame, text="Select Scenario:", bg='#0d0d0d', fg='#31ff03', font=("pixelmix", 10))
+        self.scenario_label.pack()
+
+        self.scenario_var = tk.StringVar(self.left_frame)
+        self.scenario_var.set("Commercial Plane")  # Escenario predeterminado
+        self.scenario_options = ["Commercial Plane", "Subsonic Missile", "Supersonic Missile", "F-16 Fighting Falcon", "F-15 Eagle", "F/A-18 Hornet", "Eurofighter Typhoon", "ICBM"]
+        self.scenario_dropdown = tk.OptionMenu(self.left_frame, self.scenario_var, *self.scenario_options)
+        self.scenario_dropdown.pack()
+        
+        # Vincular la función update_weight al evento de selección en el menú desplegable
+        self.scenario_var.trace("w", self.update_weight)
+        
+
+        self.altitude_display_label = tk.Label(self.right_frame, text="Altitude (m):", bg='#0d0d0d', fg='#31ff03', font=("pixelmix", 10))
+        self.altitude_display_label.pack()
+
+        self.altitude_display = tk.Label(self.right_frame, text="0", font=("pixelmix", 10), bg='#0d0d0d', fg='#31ff03')
+        self.altitude_display.pack()
+        
+        self.speed_display_label = tk.Label(self.right_frame, text="Speed (m/s):", bg='#0d0d0d', fg='#31ff03', font=("pixelmix", 10))
+        self.speed_display_label.pack()
+
+        self.speed_display = tk.Label(self.right_frame, text="0", font=("pixelmix", 10), bg='#0d0d0d', fg='#31ff03')
+        self.speed_display.pack()
+
+        self.match_speed_label = tk.Label(self.right_frame, text="Match Speed:", bg='#0d0d0d', fg='#31ff03', font=("pixelmix", 7))
+        self.match_speed_label.pack()
+
+        self.match_speed_display = tk.Label(self.right_frame, text="", font=("pixelmix", 7), bg='#0d0d0d', fg='#31ff03')
+        self.match_speed_display.pack()
+
+        self.wind_velocity_label = tk.Label(root, text="Wind Velocity:", bg='#0d0d0d', fg='#31ff03', font=("pixelmix", 10))
+        self.wind_velocity_label.pack()
+
+        self.wind_velocity_display = tk.Label(root, text="0", font=("pixelmix", 10), bg='#0d0d0d', fg='#31ff03')
+        self.wind_velocity_display.pack()
+
+        self.wind_direction_label = tk.Label(root, text="Wind Direction:", bg='#0d0d0d', fg='#31ff03', font=("pixelmix", 10))
+        self.wind_direction_label.pack()
+
+        self.wind_direction_display = tk.Label(root, text="", font=("pixelmix", 10), bg='#0d0d0d', fg='#31ff03')
+        self.wind_direction_display.pack()
+
+        self.wind_arrow_label = tk.Label(root, text="Wind Arrow:", bg='#0d0d0d', fg='#31ff03', font=("pixelmix", 10))
+        self.wind_arrow_label.pack()
+
+        self.wind_arrow_display = tk.Label(root, text="", font=("pixelmix", 10), bg='#0d0d0d', fg='#31ff03')
+        self.wind_arrow_display.pack()
+
+        self.execute_button = tk.Button(root, text="Execute", command=self.execute_simulation_with_sound, bg="#28d900", fg="white", font=("Arial", 10, "bold"))
+        self.execute_button.pack(pady=(10, 10))  # Ajuste de relleno para bajar el botón
+        
+        self.reset_button = tk.Button(root, text="Reset", command=self.reset_simulation, bg="#d1a515", fg="white", font=("Arial", 10, "bold"))
+        self.reset_button.pack(pady=(5, 10))  # Ajuste de relleno para bajar el botón
+
+        self.stop_button = tk.Button(root, text="Stop", command=self.stop_simulation, bg="red", fg="white", font=("Arial", 10, "bold"))
+        self.stop_button.pack(pady=(5, 10))  # Ajuste de relleno para bajar el botón
+
+        self.simulation_running = False
+
+        self.root.bind("<Button-3>", self.open_context_menu)
+
+        # Velocidades Mach en km/h
+        self.mach_speeds_kmph = {
+            "Mach 1": 1225,
+            "Mach 2": 2450,
+            "Mach 3": 3676,
+            "Mach 4": 4901,
+            "Mach 5": 6126,
+            "Mach 6": 7351,
+            "Mach 7": 8577,
+            "Mach 8": 9802,
+            "Mach 9": 11027,
+            "Mach 10": 12252
+        }
+
+        # Velocidades de los nuevos modelos en km/h
+        self.reference_model_speeds_kmph = {
+            "Commercial Plane": 800,
+            "Subsonic Missile": 500,
+            "Supersonic Missile": 6174,
+            "F-16 Fighting Falcon": 2414,
+            "F-15 Eagle": 3200,
+            "F/A-18 Hornet": 2220,
+            "Eurofighter Typhoon": 2495,
+            "ICBM": 6174
+        }
+
+        self.convert_window_open = False  # Indicador para rastrear si la ventana de conversión está abierta
+        
+        
+        self.root.bind('<Escape>', self.confirm_exit)
+
+    
+    
+    
+    
+    def load_sounds(self):
+        self.exit_sound = pygame.mixer.Sound("sounds/exit.mp3")
+    
+    
+    def confirm_exit(self, event):
+        # Reproducir el sonido antes de mostrar el cuadro de diálogo de confirmación
+        self.exit_sound.play()
+    
+        confirm = messagebox.askyesno("Confirm Exit", "Do you want to close the program?")
+        if confirm:
+            self.root.destroy()
+
+            
+
+        
+    def validate_entry(self, text, entry):
+        # Esta función se llama cada vez que se intenta ingresar texto en los campos de entrada
+        if text.isdigit() or text == "":
+            return True  # Permitir ingreso de números o cadena vacía
+        else:
+            messagebox.showerror("Error", "Please enter numbers only.")  # Mostrar mensaje de error
+            return False  # Bloquear el ingreso de otros caracteres    
+        
+     
+    def open_aircraft_window(self):
+        """
+        Abre una nueva ventana que muestra una imagen y un texto.
+        """
+        if not self.aircraft_window_open:
+            aircraft_window = tk.Toplevel(self.root)
+            aircraft_window.title("Aircraft / Objects ID")
+            aircraft_window.geometry("400x600")
+            aircraft_window.resizable(False, False)
+            aircraft_window.iconbitmap('images/icon.ico')
+            aircraft_window.configure(bg='black')  # Asignar fondo negro
+            button_sound = pygame.mixer.Sound("sounds/button-object-id.mp3")  # Ajusta la ruta y el nombre del archivo de sonido
+            
+            # Inserta la imagen y el texto adecuados
+            self.aircraft_image_label = tk.Label(aircraft_window)
+            self.aircraft_image_label.pack()
+
+            self.aircraft_text_label = tk.Label(aircraft_window, text="", font=("pixelmix", 8), bg="black", fg="#31ff03")  # Cambiar colores de texto y fondo
+            self.aircraft_text_label.pack(anchor="center")
+
+            self.update_aircraft_data()  # Actualiza la imagen y el texto
+
+            # Botón "Previous" con el sonido cargado
+            previous_button = tk.Button(aircraft_window, text="Previous", command=self.previous_aircraft, font=("Arial", 10), bg="#1e1f1e", fg="white")
+            previous_button.pack(side=tk.LEFT, padx=10, pady=10)
+            previous_button.config(command=lambda: [button_sound.play(), self.previous_aircraft()])  # Agregar el sonido al botón
+
+            # Botón "Next" con el sonido cargado
+            next_button = tk.Button(aircraft_window, text="Next", command=self.next_aircraft, font=("Arial", 10), bg="#1e1f1e", fg="white")
+            next_button.pack(side=tk.RIGHT, padx=10, pady=10)
+            next_button.config(command=lambda: [button_sound.play(), self.next_aircraft()])  # Agregar el sonido al botón
+
+            self.aircraft_window_open = True
+
+        def close_aircraft_window():
+            aircraft_window.destroy()
+            self.aircraft_window_open = False
+
+        aircraft_window.protocol("WM_DELETE_WINDOW", close_aircraft_window)
+
+    def update_aircraft_data(self):
+        """
+        Actualiza la imagen y el texto del modelo de avión actual.
+        """
+        aircraft = self.aircraft_data[self.current_aircraft_index]
+        image = Image.open(aircraft["image_path"])
+        photo = ImageTk.PhotoImage(image)
+        self.aircraft_image_label.configure(image=photo)
+        self.aircraft_image_label.image = photo
+        self.aircraft_text_label.config(text=aircraft["info"])
+
+    def next_aircraft(self):
+        """
+        Cambia al siguiente modelo de avión.
+        """
+        self.current_aircraft_index = (self.current_aircraft_index + 1) % len(self.aircraft_data)
+        self.update_aircraft_data()
+
+    def previous_aircraft(self):
+        """
+        Cambia al modelo de avión anterior.
+        """
+        self.current_aircraft_index = (self.current_aircraft_index - 1) % len(self.aircraft_data)
+        self.update_aircraft_data() 
+     
+     
+     
+    def open_timer_window(self):
+        """
+        Abre una nueva ventana con un temporizador.
+        """
+        timer_sound = pygame.mixer.Sound("sounds/timer.mp3")  # Ajusta la ruta y el nombre del archivo de sonido
+        
+        # Verificar si la ventana del temporizador ya está abierta
+        if not self.timer_window_open:
+            timer_window = tk.Toplevel(self.root)
+            timer_window.title("Timer")
+            timer_window.geometry("200x100")
+            timer_window.resizable(False, False)
+            timer_window.iconbitmap('images/icon.ico')
+            
+            # Reproducir el sonido cuando se abre la ventana del temporizador
+            timer_sound.play()
+
+            # Crear una instancia de TimerWindow
+            timer_app = TimerWindow(timer_window)
+            timer_app.start_timer()
+
+            # Establecer la variable de instancia a True para indicar que la ventana del temporizador está abierta
+            self.timer_window_open = True
+        
+            def close_timer_window():
+                timer_window.destroy()
+                TimerWindow.instance = None  # Reiniciar la instancia
+                self.timer_window_open = False  # Restablecer el indicador
+
+            # Configurar la función close_timer_window() para manejar el evento de cierre de la ventana
+            timer_window.protocol("WM_DELETE_WINDOW", close_timer_window)
+            
+            
+            
+
+    def open_context_menu(self, event):
+        """
+        Abre un menú contextual en la posición del evento del botón derecho del mouse.
+        """
+        # Verificar si el evento ocurrió fuera de la ventana de ayuda
+        if not isinstance(event.widget, tk.Toplevel):
+            context_menu = tk.Menu(self.root, tearoff=0)
+            context_menu.add_command(label="About", command=self.open_about_window)
+            context_menu.add_command(label="Kilograms to Metric Tons conversion", command=self.convert_to_kg_to_ton)
+            context_menu.add_command(label="Timer", command=self.open_timer_window)
+            context_menu.add_command(label="Aircraft / Objects ID", command=self.open_aircraft_window)  # Agregar la opción "Aircraft / Objects ID"
+            context_menu.add_separator()
+            context_menu.add_command(label="Help", command=self.open_help_window)  # Agregar la opción Help
+            context_menu.tk_popup(event.x_root, event.y_root)  # Mostrar el menú contextual en la posición del evento
+
+        # Verificar si la ventana de ayuda está abierta y si el evento ocurrió fuera de ella
+        elif isinstance(event.widget, tk.Toplevel) and event.widget.title() == "Help":
+            self.root.bell()  # Emitir un sonido de advertencia si se intenta abrir otra ventana de ayuda
+
+    
+    
+    def open_help_window(self):
+        """
+        Abre una nueva ventana de ayuda.
+        """
+        help_sound = pygame.mixer.Sound("sounds/help.mp3")
+        
+        
+        if not self.help_window_open:
+            help_window = tk.Toplevel(self.root)
+            help_window.title("Help")
+            help_window.geometry("400x300")
+            help_window.resizable(False, False)
+            help_window.configure(bg='#080808')  # Establecer el color de fondo de la ventana
+            help_window.iconbitmap('images/icon.ico')
+            
+            help_sound.play()
+
+            # Inserta tu nuevo texto de ayuda adecuado
+            help_text = " \n\n Welcome to the Hard Landing Simulator help section!\n\n-------------------------------\n\nThis program helps you simulate forced landings with different models of airplanes or objects.\n\nSimply enter the weight in kilograms and the altitude in meters or you can select a scenario with preset models and click the execute button to start the simulation. (You will still have to specify the altitude)\n\nIf you need to convert KG to Tons you can use the converter.\n\nIf you need to clear the information from the main screen, press the reset button."
+
+            help_label = tk.Label(help_window, text=help_text, font=("pixelmix", 8), bg='#080808', fg='#31ff03', justify="center", wraplength=380)
+            help_label.pack()
+
+            # Establecer el indicador a True para indicar que la ventana de ayuda está abierta
+            self.help_window_open = True
+
+            # Función para cerrar la ventana
+            def close_help_window():
+                help_window.destroy()
+                self.help_window_open = False  # Restablecer el indicador
+
+            help_window.protocol("WM_DELETE_WINDOW", close_help_window)
+    
+    
+    
+
+    def open_about_window(self):
+        """
+        Abre una nueva ventana "About" con una imagen.
+        """
+        
+        about_sound = pygame.mixer.Sound("sounds/about.mp3")
+        
+        if not self.about_window_open:
+            about_window = tk.Toplevel(self.root)
+            about_window.title("About")
+            about_window.geometry("300x400")
+            about_window.resizable(False, False)
+            about_window.iconbitmap('images/icon.ico')
+            
+            about_sound.play()
+
+            # Inserta tu ruta de imagen adecuada
+            image = tk.PhotoImage(file="images/about1.png")
+            image_label = tk.Label(about_window, image=image)
+            image_label.image = image
+            image_label.pack()
+            
+            # Establecer el indicador a True para indicar que la ventana "About" está abierta
+            self.about_window_open = True
+            
+            # Función para cerrar la ventana
+            def close_about_window():
+                about_window.destroy()
+                self.about_window_open = False  # Restablecer el indicador
+            
+            about_window.protocol("WM_DELETE_WINDOW", close_about_window)
+            
+            
+    def update_weight(self, *args):
+        """
+        Actualiza el peso en el casillero de entrada cuando se selecciona un escenario.
+        """
+        scenario = self.scenario_var.get()
+        weight_dict = {
+            "Commercial Plane": 50000,
+            "Subsonic Missile": 500,
+            "Supersonic Missile": 2000,
+            "F-16 Fighting Falcon": 9207,
+            "F-15 Eagle": 20410,
+            "F/A-18 Hornet": 12701,
+            "Eurofighter Typhoon": 11500,
+            "ICBM": 208000
+        }
+        weight = weight_dict.get(scenario, "")
+        self.kg_entry.delete(0, tk.END)
+        self.kg_entry.insert(0, str(weight))   
+        
+
+        
+    def execute_simulation(self):
+        self.simulation_running = True
+
+        weight = self.kg_entry.get()
+        altitude = self.altitude_entry.get()
+
+        if not weight or not altitude:
+            return
+
+        weight = float(weight)
+        altitude = float(altitude)
+
+        scenario = self.scenario_var.get()
+
+        # Definir una aceleración predeterminada
+        acceleration = 0
+
+        # Determinar la aceleración según el escenario seleccionado
+        if scenario in self.reference_model_speeds_kmph:  # Check if it's a reference model
+            acceleration = self.reference_model_speeds_kmph[scenario] / 36  # Convert from km/h to m/s
+
+        velocity = 0
+        object_height = altitude
+
+        wind_speed = 5
+        wind_direction = uniform(0, 360)
+
+        while altitude > 0 and self.simulation_running:
+            time.sleep(0.1)
+
+            # Update velocity and altitude with wind speed
+            velocity += (acceleration + wind_speed) * 0.1
+            altitude -= velocity * 0.1
+
+            if altitude < 0:
+                altitude = 0
+
+            # Simulate slow changes in wind speed and direction
+            wind_speed += uniform(-0.1, 0.1)
+            wind_direction += uniform(-1, 1)
+
+            # Limit wind speed between 0 and 20 m/s
+            wind_speed = max(0, min(20, wind_speed))
+
+            # Update altitude, speed, and wind direction labels
+            self.altitude_display.config(text="{:.2f}".format(altitude))
+            self.speed_display.config(text="{:.2f}".format(velocity))
+            self.wind_velocity_display.config(text="{:.2f} m/s".format(wind_speed))
+            self.update_wind_direction(wind_direction)
+            self.update_wind_arrow(wind_direction)
+
+            # Check for Mach Speed
+            self.check_mach_speed(velocity)
+
+            self.root.update()
+
+        if altitude <= 0:
+            impact_force = weight * acceleration
+            kinetic_energy = 0.5 * weight * velocity ** 2
+            self.show_impact_info("Impact", impact_force, kinetic_energy)
+
+    def execute_simulation_with_sound(self):
+        # Reproducir el sonido del botón
+        self.button_sound.play()
+        # Ejecutar simulación
+        self.execute_simulation()
+
+    def stop_simulation(self):
+        """
+        Stop the simulation.
+        """
+        # Reproducir el sonido del botón de stop
+        self.stop_sound.play()
+
+        self.simulation_running = False
+        
+        
+        
+    def reset_simulation(self):
+        """
+        Reset all input fields and labels to their initial state.
+        """
+        # Reproducir el sonido del botón de reset
+        self.reset_sound.play()
+
+        # Limpiar las entradas de texto
+        self.kg_entry.delete(0, tk.END)
+        self.altitude_entry.delete(0, tk.END)
+
+        # Restablecer los valores de los labels de visualización
+        self.altitude_display.config(text="0")
+        self.speed_display.config(text="0")
+        self.match_speed_display.config(text="")
+
+        # Restablecer los valores predeterminados en el menú desplegable
+        self.scenario_var.set("Commercial Plane")
+
+        # Limpiar cualquier información de impacto mostrada previamente
+        for widget in self.root.winfo_children():
+            if isinstance(widget, tk.Label) and "Impact" in widget.cget("text"):
+                widget.destroy()
+                
+                
+        # Reiniciar el contador de impacto
+        self.impact_count = 0        
+                
+                
+                    
+
+    def update_wind_direction(self, wind_direction):
+        """
+        Update wind direction and display as the corresponding cardinal point.
+        """
+        cardinal_directions = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
+                               "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
+        index = round((wind_direction % 360) / 22.5)
+        wind_cardinal = cardinal_directions[index % 16]
+
+        self.wind_direction_display.config(text=f"{wind_cardinal} ({wind_direction:.2f}°)")
+
+    def update_wind_arrow(self, wind_direction):
+        """
+        Update wind direction with an arrow.
+        """
+        arrow_chars = ["↑", "↗", "→", "↘", "↓", "↙", "←", "↖"]
+        index = round(wind_direction / 45) % 8
+        self.wind_arrow_display.config(text=arrow_chars[index])
+
+    def check_mach_speed(self, velocity):
+        """
+        Check if the speed matches any Mach speed and update the display accordingly.
+        """
+        mach_speed = None
+        for mach, kmph in self.mach_speeds_kmph.items():
+            if velocity * 3.6 >= kmph:  # Convert m/s to km/h
+                mach_speed = mach
+        if mach_speed:
+            self.match_speed_display.config(text=f"Mach {mach_speed.split()[1]} achieved!")
+
+
+
+    def show_impact_info(self, impact, force, kinetic_energy):
+        """
+        Show impact information.
+        """
+        self.impact_count += 1
+
+        impact_info = f"{impact}\nForce: {force} N\nKinetic Energy: {kinetic_energy} J"
+
+        impact_label = tk.Label(self.root, text=impact_info, font=("Arial", 12), bg='#1a1919', fg='#31ff03')
+        impact_label.pack()
+
+        # Cargar y reproducir el sonido
+        impact_sound = pygame.mixer.Sound("sounds/impact.mp3")
+        impact_sound.play()
+
+        self.impact_labels.append(impact_label)
+
+        if self.impact_count == 5:
+            # Después de mostrar 4 veces, eliminar todas las impresiones anteriores de impacto
+            for label in self.impact_labels:
+                label.destroy()
+            self.impact_labels.clear()
+            self.impact_count = 0  # Reiniciar el contador
+
+
+    def convert_to_kg_to_ton(self):
+        """
+        Open a window to convert weight from KG to Ton.
+        """
+        if self.convert_window_open:
+            return  # Evita abrir múltiples ventanas de conversión
+
+        convert_window = tk.Toplevel(self.root)
+        convert_window.title("Convert KG to Ton")
+        convert_window.geometry("300x200")
+        convert_window.resizable(False, False)
+        convert_window.iconbitmap('images/icon.ico')
+
+        # Cargar y reproducir el sonido en bucle
+        conversion_sound = pygame.mixer.Sound("sounds/convertersound.mp3")
+        conversion_sound.play(loops=-1)
+
+        # Agregar una imagen de fondo
+        convert_bg_image = tk.PhotoImage(file="images/converterimage.png")
+        convert_bg_label = tk.Label(convert_window, image=convert_bg_image)
+        convert_bg_label.image = convert_bg_image  # Mantener una referencia a la imagen
+        convert_bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+
+        # Cambiar las tipografías y colores de los elementos
+        label = tk.Label(convert_window, text="Enter weight (KG):", font=("pixelmix", 9), bg='#1a1919', fg='#31ff03')
+        label.pack()
+
+        entry = tk.Entry(convert_window, font=("Arial", 12))
+        entry.pack()
+
+        def convert():
+            try:
+                kg = float(entry.get())
+            except ValueError:
+                messagebox.showerror("Error", "Please enter a valid number")
+                return
+            ton = kg / 1000
+            result_label.config(text=f"{kg} KG is {ton} Tons")
+
+        convert_button = tk.Button(convert_window, text="Convert", command=convert, bg="#1e1f1e", fg="white", font=("Arial", 10, "bold"))
+        convert_button.pack(pady=(10, 10))
+
+        result_label = tk.Label(convert_window, text="", font=("pixelmix", 7), bg='#1a1919', fg='#31ff03')
+        result_label.pack()
+
+        def close_window():
+            convert_window.destroy()
+            conversion_sound.stop()
+            self.convert_window_open = False  # Restablecer el indicador
+
+        convert_window.protocol("WM_DELETE_WINDOW", close_window)
+        self.convert_window_open = True  # Establecer el indicador para evitar abrir múltiples ventanas
+
+
+
+class TimerWindow:
+    instance = None
+
+    def __init__(self, root):
+        if TimerWindow.instance is not None:
+            return
+        TimerWindow.instance = self
+
+        self.root = root
+
+        # Cargar la imagen de fondo
+        self.background_image = Image.open("images/timer.jpg")  
+        self.background_photo = ImageTk.PhotoImage(self.background_image)
+        self.background_label = tk.Label(root, image=self.background_photo)
+        self.background_label.place(relwidth=1, relheight=1)
+
+        # Crear el label del temporizador
+        self.timer_label = tk.Label(root, text="00:00", font=("pixelmix", 13), fg="#31ff03", bg="black")
+        self.timer_label.place(relx=0.5, rely=0.5, anchor=tk.CENTER)  # Colocar el label en el centro
+
+        self.start_time = None
+
+        # Cambiar el tamaño de la ventana
+        root.geometry("180x100")
+
+    def update_timer(self):
+        """
+        Actualiza el temporizador cada segundo.
+        """
+        if self.start_time is not None:
+            elapsed_time = time.time() - self.start_time
+            minutes = int(elapsed_time // 60)
+            seconds = int(elapsed_time % 60)
+            timer_text = f"{minutes:02}:{seconds:02}"
+            self.timer_label.config(text=timer_text)
+        self.root.after(1000, self.update_timer)
+
+    def start_timer(self):
+        """
+        Inicia el temporizador.
+        """
+        self.start_time = time.time()
+        self.update_timer()
+
+
+
+# Ventana principal
+root = tk.Tk()
+app = HardLandingSimulator(root)
+root.mainloop()
